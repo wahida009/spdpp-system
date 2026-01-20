@@ -177,12 +177,12 @@
 /* ================= AUTH ================= */
 if (localStorage.getItem("loggedIn") !== "true") {
   alert("Sila log masuk terlebih dahulu!");
-  window.location.href = "../login.html";
+  window.location.href = "login.html";
 }
 
 function logout() {
   localStorage.removeItem("loggedIn");
-  window.location.href = "../login.html";
+  window.location.href = "login.html";
 }
 
 /* ================= CONFIG ================= */
@@ -353,6 +353,7 @@ loadData();
 
 </body>
 </html>
+
 
 
 
