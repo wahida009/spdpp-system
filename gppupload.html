@@ -16,118 +16,76 @@
       box-shadow:0 4px 14px rgba(0,0,0,.05);
       max-width:720px;
     }
-
-    label {
-      font-weight:600;
-      color:#004aad;
-      display:block;
-      margin-bottom:6px;
-    }
-
+    label { font-weight:600; color:#004aad; display:block; margin-bottom:6px; }
     input, select {
-      width:100%;
-      padding:10px;
-      margin-bottom:14px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:14px;
+      width:100%; padding:10px; margin-bottom:14px;
+      border-radius:8px; border:1px solid #ccc; font-size:14px;
     }
-
     .drop-zone {
-      border:2px dashed #cfe3ff;
-      border-radius:10px;
-      padding:18px;
-      text-align:center;
-      background:#f7fbff;
-      cursor:pointer;
-      margin-bottom:12px;
+      border:2px dashed #cfe3ff; border-radius:10px;
+      padding:18px; text-align:center; background:#f7fbff;
+      cursor:pointer; margin-bottom:12px;
     }
-
     .file-item {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background:#eef4ff;
-      padding:8px 12px;
-      border-radius:8px;
-      margin-bottom:6px;
-      font-size:14px;
+      display:flex; justify-content:space-between; align-items:center;
+      background:#eef4ff; padding:8px 12px; border-radius:8px;
+      margin-bottom:6px; font-size:14px;
     }
-
     .btn {
-      background:#004aad;
-      color:#fff;
-      border:none;
-      padding:10px 16px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
+      background:#004aad; color:#fff; border:none;
+      padding:10px 16px; border-radius:8px;
+      cursor:pointer; font-weight:600;
     }
-
     .btn.secondary {
-      background:#eef3ff;
-      color:#004aad;
+      background:#eef3ff; color:#004aad;
       border:1px solid #cfe3ff;
     }
-
-    .actions {
-      display:flex;
-      gap:12px;
-      margin-top:14px;
-    }
-
-    .small {
-      font-size:13px;
-      color:#666;
-    }
+    .actions { display:flex; gap:12px; margin-top:14px; }
+    .small { font-size:13px; color:#666; }
   </style>
 </head>
 
 <body>
 
-<!-- 🔒 AUTH -->
+<!-- AUTH -->
 <script>
-  if (localStorage.getItem("loggedIn") !== "true") {
-    alert("Sila log masuk terlebih dahulu!");
-    window.location.href = "login.html";
-  }
+if (localStorage.getItem("loggedIn") !== "true") {
+  alert("Sila log masuk terlebih dahulu!");
+  window.location.href = "login.html";
+}
 </script>
 
-<!-- 🟦 SIDEBAR -->
+<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
     <h2>SPDPP</h2>
-    <button class="toggle-btn"><i class="fas fa-bars"></i></button>
   </div>
-
   <nav class="sidebar-nav">
-    <a href="index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
-    <a href="gpp.html"><i class="fas fa-folder-open"></i><span>GPP</span></a>
+    <a href="index.html"><i class="fas fa-home"></i> Laman Utama</a>
+    <a href="gpp.html" class="active"><i class="fas fa-folder-open"></i> GPP</a>
     <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
     <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
   </nav>
-
   <button class="logout-btn" onclick="logout()">
-    <i class="fas fa-right-from-bracket"></i><span>Log Keluar</span>
+    <i class="fas fa-right-from-bracket"></i> Log Keluar
   </button>
 </aside>
 
-<!-- 🟩 MAIN -->
+<!-- MAIN -->
 <main class="main-content">
-
   <div class="content-header">
     <h1>Muat Naik Fail GPP</h1>
   </div>
 
   <div class="form-card">
 
-    <p class="small">
-      <b>Tajuk GPP:</b> <span id="tajukLabel"></span>
-    </p>
+    <!-- TAJUK -->
+    <label>Tajuk GPP</label>
+    <input type="text" id="tajuk" placeholder="Masukkan tajuk GPP" required>
 
     <!-- MESYUARAT -->
     <label>Mesyuarat</label>
-    <select id="mesyuarat">
+    <select id="mesyuarat" required>
       <option value="">-- Pilih Mesyuarat --</option>
       <option>JPP PLANM</option>
       <option>JPP KPKT</option>
@@ -137,7 +95,7 @@
 
     <!-- TAHUN -->
     <label>Tahun</label>
-    <select id="tahun"></select>
+    <select id="tahun" required></select>
 
     <!-- BIL -->
     <label>Bilangan</label>
@@ -149,7 +107,6 @@
       Seret fail ke sini atau klik untuk pilih
     </div>
     <input type="file" id="fileInput" multiple hidden>
-
     <div id="fileList"></div>
 
     <!-- BUTTON -->
@@ -159,37 +116,18 @@
     </div>
 
     <p class="small" id="statusMsg"></p>
-
   </div>
 </main>
 
 <script>
-/* ===== AUTH ===== */
-if (localStorage.getItem("loggedIn") !== "true") {
-  alert("Sila log masuk terlebih dahulu!");
-  window.location.href = "login.html";
-}
-
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
-}
-
-/* ===== CONFIG ===== */
+/* ================= CONFIG ================= */
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
+  "https://script.google.com/macros/s/AKfycbybCo68TXNWobld8qAbvr40Sl_THD7Q-L0FSYzixjTl0jwTsscT0VilsnVpunE61a3r/exec";   // 🔴 WAJIB URL TERKINI
 
-/* ===== ELEMENTS ===== */
-const tajukInput = document.createElement("input");
-tajukInput.id = "tajukInput";
-tajukInput.placeholder = "Masukkan Tajuk";
-tajukInput.style.marginBottom = "14px";
-tajukInput.required = true;
+const KATEGORI = "GPP"; // tukar ke PERUNDANGAN / KAJIAN jika duplicate
 
-document
-  .querySelector(".form-card p.small")
-  .after(tajukInput);
-
+/* ================= ELEMENTS ================= */
+const tajukInput = document.getElementById("tajuk");
 const mesyuaratSelect = document.getElementById("mesyuarat");
 const tahunSelect = document.getElementById("tahun");
 const bilInput = document.getElementById("bil");
@@ -198,28 +136,20 @@ const fileInput = document.getElementById("fileInput");
 const fileList = document.getElementById("fileList");
 const statusMsg = document.getElementById("statusMsg");
 
-/* ===== YEAR OPTIONS (2026 → 2006) ===== */
+/* ================= YEAR OPTIONS ================= */
 for (let y = 2026; y >= 2006; y--) {
   tahunSelect.innerHTML += `<option value="${y}">${y}</option>`;
 }
 
-/* ===== FILE HANDLING ===== */
+/* ================= FILE HANDLING ================= */
 let files = [];
 
 dropZone.onclick = () => fileInput.click();
 fileInput.onchange = e => addFiles(e.target.files);
 
-dropZone.ondragover = e => {
-  e.preventDefault();
-  dropZone.style.background = "#eef6ff";
-};
-
-dropZone.ondragleave = () =>
-  (dropZone.style.background = "#f7fbff");
-
+dropZone.ondragover = e => { e.preventDefault(); };
 dropZone.ondrop = e => {
   e.preventDefault();
-  dropZone.style.background = "#f7fbff";
   addFiles(e.dataTransfer.files);
 };
 
@@ -230,29 +160,25 @@ function addFiles(list) {
 
 function renderFiles() {
   fileList.innerHTML = "";
-  files.forEach((f, i) => {
+  files.forEach((f,i) => {
     fileList.innerHTML += `
       <div class="file-item">
         <span>${f.name}</span>
-        <button class="btn secondary" onclick="removeFile(${i})">
-          Buang
-        </button>
-      </div>
-    `;
+        <button class="btn secondary" onclick="removeFile(${i})">Buang</button>
+      </div>`;
   });
 }
 
 function removeFile(i) {
-  files.splice(i, 1);
+  files.splice(i,1);
   renderFiles();
 }
 
-/* ===== SUBMIT UPLOAD ===== */
+/* ================= SUBMIT ================= */
 async function submitUpload() {
-  const tajuk = tajukInput.value.trim();
 
-  if (!tajuk || !mesyuaratSelect.value || !tahunSelect.value || files.length === 0) {
-    alert("Sila lengkapkan SEMUA maklumat.");
+  if (!tajukInput.value || !mesyuaratSelect.value || !tahunSelect.value || files.length === 0) {
+    alert("Sila lengkapkan semua maklumat.");
     return;
   }
 
@@ -271,62 +197,55 @@ async function submitUpload() {
   );
 
   const payload = {
-    kategori: "GPP",
-    tajuk: tajuk,
+    kategori: KATEGORI,
+    tajuk: tajukInput.value,
     mesyuarat: mesyuaratSelect.value,
     tahun: tahunSelect.value,
     bil: bilInput.value || 1,
     files: filesData
   };
 
-try {
-  const res = await fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
 
-  const json = await res.json();
+    const json = await res.json();
 
-  if (json.success) {
-    alert("✅ " + json.message);
-    resetForm();
-  } else {
-    alert("❌ " + json.message);
+    if (json.success) {
+      alert("✅ " + json.message);
+      resetForm();
+    } else {
+      alert("❌ " + json.message);
+    }
+
+  } catch (err) {
+    alert("❌ Ralat sambungan ke server");
+    console.error(err);
   }
 
-} catch (err) {
-  alert("❌ Ralat sambungan ke server");
-  console.error(err);
-}
-
-statusMsg.innerText = "";
-
-}
-function resetForm() {
-  // kosongkan tajuk
-  tajukInput.value = "";
-
-  // reset dropdown
-  mesyuaratSelect.value = "";
-  tahunSelect.selectedIndex = 0;
-
-  // reset bil
-  bilInput.value = 1;
-
-  // kosongkan fail
-  files = [];
-  fileList.innerHTML = "";
-
-  // mesej status
   statusMsg.innerText = "";
 }
 
-</script>
+/* ================= RESET ================= */
+function resetForm() {
+  tajukInput.value = "";
+  mesyuaratSelect.value = "";
+  tahunSelect.selectedIndex = 0;
+  bilInput.value = 1;
+  files = [];
+  fileList.innerHTML = "";
+  statusMsg.innerText = "";
+}
 
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
+</script>
 
 </body>
 </html>
-
-
-
