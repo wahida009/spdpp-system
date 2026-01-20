@@ -155,7 +155,7 @@
     <!-- BUTTON -->
     <div class="actions">
       <button class="btn" onclick="submitUpload()">Muat Naik</button>
-      <button class="btn secondary" onclick="history.back()">Batal</button>
+      <button class="btn secondary" onclick="resetForm()">Batal</button>
     </div>
 
     <p class="small" id="statusMsg"></p>
@@ -164,15 +164,32 @@
 </main>
 
 <script>
-/* ===== CONFIG ===== */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
+/* ===== AUTH ===== */
+if (localStorage.getItem("loggedIn") !== "true") {
+  alert("Sila log masuk terlebih dahulu!");
+  window.location.href = "login.html";
+}
 
-/* ===== PARAM ===== */
-const params = new URLSearchParams(window.location.search);
-const tajuk = params.get("tajuk") || "";
-document.getElementById("tajukLabel").innerText = tajuk || "(Tajuk baharu)";
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
+
+/* ===== CONFIG ===== */
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
 
 /* ===== ELEMENTS ===== */
+const tajukInput = document.createElement("input");
+tajukInput.id = "tajukInput";
+tajukInput.placeholder = "Masukkan Tajuk";
+tajukInput.style.marginBottom = "14px";
+tajukInput.required = true;
+
+document
+  .querySelector(".form-card p.small")
+  .after(tajukInput);
+
 const mesyuaratSelect = document.getElementById("mesyuarat");
 const tahunSelect = document.getElementById("tahun");
 const bilInput = document.getElementById("bil");
@@ -181,17 +198,15 @@ const fileInput = document.getElementById("fileInput");
 const fileList = document.getElementById("fileList");
 const statusMsg = document.getElementById("statusMsg");
 
-/* ===== YEAR OPTIONS ===== */
-const currentYear = new Date().getFullYear();
-for (let i = 0; i < 6; i++) {
-  tahunSelect.innerHTML += `<option>${currentYear - i}</option>`;
+/* ===== YEAR OPTIONS (2026 → 2006) ===== */
+for (let y = 2026; y >= 2006; y--) {
+  tahunSelect.innerHTML += `<option value="${y}">${y}</option>`;
 }
 
 /* ===== FILE HANDLING ===== */
 let files = [];
 
 dropZone.onclick = () => fileInput.click();
-
 fileInput.onchange = e => addFiles(e.target.files);
 
 dropZone.ondragover = e => {
@@ -199,7 +214,8 @@ dropZone.ondragover = e => {
   dropZone.style.background = "#eef6ff";
 };
 
-dropZone.ondragleave = () => dropZone.style.background = "#f7fbff";
+dropZone.ondragleave = () =>
+  (dropZone.style.background = "#f7fbff");
 
 dropZone.ondrop = e => {
   e.preventDefault();
@@ -207,34 +223,36 @@ dropZone.ondrop = e => {
   addFiles(e.dataTransfer.files);
 };
 
-function addFiles(fileListInput) {
-  for (let f of fileListInput) files.push(f);
+function addFiles(list) {
+  for (let f of list) files.push(f);
   renderFiles();
 }
 
 function renderFiles() {
   fileList.innerHTML = "";
-  files.forEach((f,i) => {
+  files.forEach((f, i) => {
     fileList.innerHTML += `
       <div class="file-item">
         <span>${f.name}</span>
-        <button class="btn secondary" onclick="removeFile(${i})">Buang</button>
-      </div>`;
+        <button class="btn secondary" onclick="removeFile(${i})">
+          Buang
+        </button>
+      </div>
+    `;
   });
 }
 
 function removeFile(i) {
-  files.splice(i,1);
+  files.splice(i, 1);
   renderFiles();
 }
 
-/* ===== SUBMIT ===== */
+/* ===== SUBMIT UPLOAD ===== */
 async function submitUpload() {
+  const tajuk = tajukInput.value.trim();
 
-  const tajukFinal = tajuk || "Tajuk Baharu";
-
-  if (!mesyuaratSelect.value || files.length === 0) {
-    alert("Sila lengkapkan maklumat.");
+  if (!tajuk || !mesyuaratSelect.value || !tahunSelect.value || files.length === 0) {
+    alert("Sila lengkapkan SEMUA maklumat.");
     return;
   }
 
@@ -253,15 +271,15 @@ async function submitUpload() {
   );
 
   const payload = {
-    action: "upload",
-    kategori: "PERUNDANGAN",        // 🔑 PENTING
-    tajuk: tajukFinal,
+    kategori: "PERUNDANGAN",
+    tajuk: tajuk,
     mesyuarat: mesyuaratSelect.value,
     tahun: tahunSelect.value,
     bil: bilInput.value || 1,
     files: filesData
   };
 
+try {
   const res = await fetch(SCRIPT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -269,17 +287,44 @@ async function submitUpload() {
   });
 
   const json = await res.json();
-  alert(json.message || "Selesai");
-  history.back();
+
+  if (json.success) {
+    alert("✅ " + json.message);
+    resetForm();
+  } else {
+    alert("❌ " + json.message);
+  }
+
+} catch (err) {
+  alert("❌ Ralat sambungan ke server");
+  console.error(err);
 }
 
-/* ===== LOGOUT ===== */
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
+statusMsg.innerText = "";
+
 }
+function resetForm() {
+  // kosongkan tajuk
+  tajukInput.value = "";
+
+  // reset dropdown
+  mesyuaratSelect.value = "";
+  tahunSelect.selectedIndex = 0;
+
+  // reset bil
+  bilInput.value = 1;
+
+  // kosongkan fail
+  files = [];
+  fileList.innerHTML = "";
+
+  // mesej status
+  statusMsg.innerText = "";
+}
+
 </script>
 
 </body>
 </html>
+
 
