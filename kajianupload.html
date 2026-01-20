@@ -85,14 +85,6 @@
 
 <body>
 
-<!-- 🔒 AUTH -->
-<script>
-  if (localStorage.getItem("loggedIn") !== "true") {
-    alert("Sila log masuk terlebih dahulu!");
-    window.location.href = "login.html";
-  }
-</script>
-
 <!-- 🟦 SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header">
@@ -179,7 +171,7 @@ function logout() {
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbybCo68TXNWobld8qAbvr40Sl_THD7Q-L0FSYzixjTl0jwTsscT0VilsnVpunE61a3r/exec";   // 🔴 WAJIB URL TERKINI
 
-const KATEGORI = "PERUNDANGAN"; // tukar ke PERUNDANGAN / KAJIAN jika duplicate
+const KATEGORI = "KAJIAN"; // tukar ke PERUNDANGAN / KAJIAN jika duplicate
 
 /* ================= ELEMENTS ================= */
 const tajukInput = document.getElementById("tajuk");
@@ -299,6 +291,7 @@ function resetForm() {
 
 </body>
 </html>
+
 
 
 
