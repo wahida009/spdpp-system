@@ -187,7 +187,7 @@ function logout() {
 
 /* ================= CONFIG ================= */
 const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
+  "https://script.google.com/macros/s/AKfycbybCo68TXNWobld8qAbvr40Sl_THD7Q-L0FSYzixjTl0jwTsscT0VilsnVpunE61a3r/exec";
 
 const KATEGORI = "GPP";   // 🔑 WAJIB SAMA DENGAN GOOGLE SHEETS (Column B)
 
@@ -199,20 +199,24 @@ let yearAsc = true;
 async function loadData() {
   try {
     const res = await fetch(
-      `${SCRIPT_URL}?action=list&kategori=${KATEGORI}`
+      `${SCRIPT_URL}?action=list&kategori=GPP`,
+      { mode: "cors" }
     );
 
+    if (!res.ok) {
+      throw new Error("HTTP " + res.status);
+    }
+
     const json = await res.json();
-    console.log("DATA SERVER:", json);
 
     if (!json.success) {
       alert("Gagal ambil data dari server");
+      console.error(json);
       return;
     }
 
     rawData = json.data;
 
-    // GROUP ikut Tajuk + Mesyuarat + Tahun + Bil
     const map = {};
     rawData.forEach(r => {
       const key = `${r.tajuk}|${r.mesyuarat}|${r.tahun}|${r.bil}`;
@@ -230,11 +234,10 @@ async function loadData() {
     renderTable();
 
   } catch (err) {
-    console.error(err);
     alert("Ralat sambungan ke server");
+    console.error(err);
   }
 }
-
 /* ================= RENDER TABLE ================= */
 function renderTable() {
   const body = document.getElementById("tableBody");
@@ -353,6 +356,7 @@ loadData();
 
 </body>
 </html>
+
 
 
 
