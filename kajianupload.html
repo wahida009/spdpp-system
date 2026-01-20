@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script src="https://kit.fontawesome.com/a2e0e6d60a.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="style.css">
 
   <style>
     .form-card {
@@ -89,7 +89,7 @@
 <script>
   if (localStorage.getItem("loggedIn") !== "true") {
     alert("Sila log masuk terlebih dahulu!");
-    window.location.href = "../login.html";
+    window.location.href = "login.html";
   }
 </script>
 
@@ -101,7 +101,7 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="../index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
+    <a href="index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
     <a href="gpp.html"><i class="fas fa-folder-open"></i><span>GPP</span></a>
     <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
     <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
@@ -277,9 +277,10 @@ async function submitUpload() {
 /* ===== LOGOUT ===== */
 function logout() {
   localStorage.removeItem("loggedIn");
-  window.location.href = "../login.html";
+  window.location.href = "login.html";
 }
 </script>
 
 </body>
 </html>
+
