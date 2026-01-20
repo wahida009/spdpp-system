@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log Masuk | Sistem Pengurusan Korporat PLANMalaysia</title>
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #004aad, #007bff, #00c6ff);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: "Poppins", sans-serif;
+      color: #333;
+    }
+
+    .login-box {
+      background: white;
+      width: 350px;
+      padding: 40px 35px;
+      border-radius: 16px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .login-box h2 {
+      color: #004aad;
+      margin-bottom: 20px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .login-box p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #004aad;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      background: linear-gradient(90deg, #004aad, #007bff);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #007bff, #004aad);
+      transform: scale(1.03);
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #777;
+    }
+
+    .footer span {
+      color: #004aad;
+      font-weight: 600;
+    }
+
+    .logo {
+      width: 70px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <img src="planmlogo.jpg" alt="PLANMalaysia Logo" class="logo">
+    <h2>Log Masuk Sistem</h2>
+    <p>Sila masukkan ID pengguna dan kata laluan untuk mengakses sistem.</p>
+
+    <form onsubmit="login(event)">
+      <input type="text" id="username" placeholder="ID Pengguna" required>
+      <input type="password" id="password" placeholder="Kata Laluan" required>
+      <button type="submit">Log Masuk</button>
+    </form>
+
+    <div class="footer">
+      © 2025 <span>PLANMalaysia</span> | Bahagian Korporat
+    </div>
+  </div>
+
+<script>
+  function login(event) {
+    event.preventDefault();
+
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+
+    // LOGIN DEMO (boleh ubah ikut supervisor)
+    if (user === "admin" && pass === "planm1234") {
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", "admin");
+      window.location.href = "index.html";
+    } 
+    else if (user === "user" && pass === "planm1234") {
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", "user");
+      window.location.href = "index.html";
+    }
+    else {
+      alert("❌ ID atau Kata Laluan salah! Sila cuba lagi.");
+    }
+  }
+</script>
+
+
+</body>
+</html>

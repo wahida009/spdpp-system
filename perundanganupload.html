@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>Muat Naik Fail Perundangan | SPDPP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://kit.fontawesome.com/a2e0e6d60a.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../style.css">
+
+  <style>
+    .form-card {
+      background:#fff;
+      padding:22px;
+      border-radius:12px;
+      box-shadow:0 4px 14px rgba(0,0,0,.05);
+      max-width:720px;
+    }
+
+    label {
+      font-weight:600;
+      color:#004aad;
+      display:block;
+      margin-bottom:6px;
+    }
+
+    input, select {
+      width:100%;
+      padding:10px;
+      margin-bottom:14px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
+    }
+
+    .drop-zone {
+      border:2px dashed #cfe3ff;
+      border-radius:10px;
+      padding:18px;
+      text-align:center;
+      background:#f7fbff;
+      cursor:pointer;
+      margin-bottom:12px;
+    }
+
+    .file-item {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#eef4ff;
+      padding:8px 12px;
+      border-radius:8px;
+      margin-bottom:6px;
+      font-size:14px;
+    }
+
+    .btn {
+      background:#004aad;
+      color:#fff;
+      border:none;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .btn.secondary {
+      background:#eef3ff;
+      color:#004aad;
+      border:1px solid #cfe3ff;
+    }
+
+    .actions {
+      display:flex;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .small {
+      font-size:13px;
+      color:#666;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- 🔒 AUTH -->
+<script>
+  if (localStorage.getItem("loggedIn") !== "true") {
+    alert("Sila log masuk terlebih dahulu!");
+    window.location.href = "../login.html";
+  }
+</script>
+
+<!-- 🟦 SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>SPDPP</h2>
+    <button class="toggle-btn"><i class="fas fa-bars"></i></button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="../index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
+    <a href="gpp.html"><i class="fas fa-folder-open"></i><span>GPP</span></a>
+    <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
+    <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
+  </nav>
+
+  <button class="logout-btn" onclick="logout()">
+    <i class="fas fa-right-from-bracket"></i><span>Log Keluar</span>
+  </button>
+</aside>
+
+<!-- 🟩 MAIN -->
+<main class="main-content">
+
+  <div class="content-header">
+    <h1>Muat Naik Fail Perundangan</h1>
+  </div>
+
+  <div class="form-card">
+
+    <p class="small">
+      <b>Tajuk Perundangan:</b> <span id="tajukLabel"></span>
+    </p>
+
+    <!-- MESYUARAT -->
+    <label>Mesyuarat</label>
+    <select id="mesyuarat">
+      <option value="">-- Pilih Mesyuarat --</option>
+      <option>JPP PLANM</option>
+      <option>JPP KPKT</option>
+      <option>MJM / NJM</option>
+      <option>MNKT</option>
+    </select>
+
+    <!-- TAHUN -->
+    <label>Tahun</label>
+    <select id="tahun"></select>
+
+    <!-- BIL -->
+    <label>Bilangan</label>
+    <input type="number" id="bil" min="1" value="1">
+
+    <!-- FILE -->
+    <label>Fail (PDF, Word, Excel, PPT)</label>
+    <div class="drop-zone" id="dropZone">
+      Seret fail ke sini atau klik untuk pilih
+    </div>
+    <input type="file" id="fileInput" multiple hidden>
+
+    <div id="fileList"></div>
+
+    <!-- BUTTON -->
+    <div class="actions">
+      <button class="btn" onclick="submitUpload()">Muat Naik</button>
+      <button class="btn secondary" onclick="history.back()">Batal</button>
+    </div>
+
+    <p class="small" id="statusMsg"></p>
+
+  </div>
+</main>
+
+<script>
+/* ===== CONFIG ===== */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
+
+/* ===== PARAM ===== */
+const params = new URLSearchParams(window.location.search);
+const tajuk = params.get("tajuk") || "";
+document.getElementById("tajukLabel").innerText = tajuk || "(Tajuk baharu)";
+
+/* ===== ELEMENTS ===== */
+const mesyuaratSelect = document.getElementById("mesyuarat");
+const tahunSelect = document.getElementById("tahun");
+const bilInput = document.getElementById("bil");
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const statusMsg = document.getElementById("statusMsg");
+
+/* ===== YEAR OPTIONS ===== */
+const currentYear = new Date().getFullYear();
+for (let i = 0; i < 6; i++) {
+  tahunSelect.innerHTML += `<option>${currentYear - i}</option>`;
+}
+
+/* ===== FILE HANDLING ===== */
+let files = [];
+
+dropZone.onclick = () => fileInput.click();
+
+fileInput.onchange = e => addFiles(e.target.files);
+
+dropZone.ondragover = e => {
+  e.preventDefault();
+  dropZone.style.background = "#eef6ff";
+};
+
+dropZone.ondragleave = () => dropZone.style.background = "#f7fbff";
+
+dropZone.ondrop = e => {
+  e.preventDefault();
+  dropZone.style.background = "#f7fbff";
+  addFiles(e.dataTransfer.files);
+};
+
+function addFiles(fileListInput) {
+  for (let f of fileListInput) files.push(f);
+  renderFiles();
+}
+
+function renderFiles() {
+  fileList.innerHTML = "";
+  files.forEach((f,i) => {
+    fileList.innerHTML += `
+      <div class="file-item">
+        <span>${f.name}</span>
+        <button class="btn secondary" onclick="removeFile(${i})">Buang</button>
+      </div>`;
+  });
+}
+
+function removeFile(i) {
+  files.splice(i,1);
+  renderFiles();
+}
+
+/* ===== SUBMIT ===== */
+async function submitUpload() {
+
+  const tajukFinal = tajuk || "Tajuk Baharu";
+
+  if (!mesyuaratSelect.value || files.length === 0) {
+    alert("Sila lengkapkan maklumat.");
+    return;
+  }
+
+  statusMsg.innerText = "Memuat naik...";
+
+  const filesData = await Promise.all(
+    files.map(f => new Promise(res => {
+      const r = new FileReader();
+      r.onload = () => res({
+        name: f.name,
+        type: f.type,
+        data: r.result
+      });
+      r.readAsDataURL(f);
+    }))
+  );
+
+  const payload = {
+    action: "upload",
+    kategori: "PERUNDANGAN",        // 🔑 PENTING
+    tajuk: tajukFinal,
+    mesyuarat: mesyuaratSelect.value,
+    tahun: tahunSelect.value,
+    bil: bilInput.value || 1,
+    files: filesData
+  };
+
+  const res = await fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const json = await res.json();
+  alert(json.message || "Selesai");
+  history.back();
+}
+
+/* ===== LOGOUT ===== */
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "../login.html";
+}
+</script>
+
+</body>
+</html>

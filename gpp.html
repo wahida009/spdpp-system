@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <title>GPP | SPDPP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font & Icon -->
+  <script src="https://kit.fontawesome.com/a2e0e6d60a.js" crossorigin="anonymous"></script>
+
+  <!-- Theme sedia ada -->
+  <link rel="stylesheet" href="../style.css">
+
+  <style>
+    .top-bar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:16px;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .top-bar input {
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      min-width:220px;
+    }
+
+    .top-actions {
+      display:flex;
+      gap:10px;
+    }
+
+    .btn {
+      background:#004aad;
+      color:#fff;
+      border:none;
+      padding:8px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .btn.secondary {
+      background:#eef3ff;
+      color:#004aad;
+      border:1px solid #cfe3ff;
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      background:#fff;
+      border-radius:10px;
+      overflow:hidden;
+    }
+
+    th {
+      background:#004aad;
+      color:#fff;
+      padding:12px;
+      text-align:left;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    td {
+      padding:12px;
+      border-bottom:1px solid #eef3ff;
+      white-space:nowrap;
+    }
+
+    tr:hover td {
+      background:#f7fbff;
+    }
+
+    .action-btn {
+      padding:6px 10px;
+      font-size:13px;
+      border-radius:6px;
+    }
+
+    .footer-bar {
+      margin-top:14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    select {
+      padding:6px 10px;
+      border-radius:6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <h2>SPDPP</h2>
+    <button class="toggle-btn"><i class="fas fa-bars"></i></button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="../index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
+    <a href="gpp.html" class="active"><i class="fas fa-folder-open"></i><span>GPP</span></a>
+    <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
+    <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
+  </nav>
+
+  <button class="logout-btn" onclick="logout()">
+    <i class="fas fa-right-from-bracket"></i><span>Log Keluar</span>
+  </button>
+</aside>
+
+<!-- MAIN -->
+<main class="main-content">
+
+  <div class="content-header">
+    <h1>Garis Panduan Perancangan (GPP)</h1>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <input type="text" id="searchInput" placeholder="Cari Tajuk GPP...">
+
+    <div class="top-actions">
+      <button class="btn secondary" onclick="alert('Padam dipilih')">
+        <i class="fas fa-trash"></i> Padam
+      </button>
+      <button class="btn" onclick="openUpload('')">
+        <i class="fas fa-plus"></i> Tambah Fail
+      </button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <table id="gppTable">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Tajuk GPP</th>
+        <th>Mesyuarat</th>
+        <th onclick="sortByYear()">Tahun ⬍</th>
+        <th>Bil</th>
+        <th>Tindakan</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <!-- FOOTER BAR -->
+  <div class="footer-bar">
+    <div>
+      Papar 
+      <select id="rowLimit" onchange="renderTable()">
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="all">Semua</option>
+      </select>
+      rekod
+    </div>
+
+    <div class="small">SPDPP | PLANMalaysia</div>
+  </div>
+
+</main>
+
+<script>
+/* ================= AUTH ================= */
+if (localStorage.getItem("loggedIn") !== "true") {
+  alert("Sila log masuk terlebih dahulu!");
+  window.location.href = "../login.html";
+}
+
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "../login.html";
+}
+
+/* ================= CONFIG ================= */
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbw-Fv4suoST1vmel6pMG78o_OHJNX6WcHenB2kn16yP4Q92RQyni1M8KEu0UwCztDc/exec";
+
+const KATEGORI = "GPP";   // 🔑 WAJIB SAMA DENGAN GOOGLE SHEETS (Column B)
+
+let rawData = [];
+let tableData = [];
+let yearAsc = true;
+
+/* ================= LOAD DATA ================= */
+async function loadData() {
+  try {
+    const res = await fetch(
+      `${SCRIPT_URL}?action=list&kategori=${KATEGORI}`
+    );
+
+    const json = await res.json();
+    console.log("DATA SERVER:", json);
+
+    if (!json.success) {
+      alert("Gagal ambil data dari server");
+      return;
+    }
+
+    rawData = json.data;
+
+    // GROUP ikut Tajuk + Mesyuarat + Tahun + Bil
+    const map = {};
+    rawData.forEach(r => {
+      const key = `${r.tajuk}|${r.mesyuarat}|${r.tahun}|${r.bil}`;
+      if (!map[key]) {
+        map[key] = {
+          tajuk: r.tajuk,
+          mesy: r.mesyuarat,
+          tahun: r.tahun,
+          bil: r.bil
+        };
+      }
+    });
+
+    tableData = Object.values(map);
+    renderTable();
+
+  } catch (err) {
+    console.error(err);
+    alert("Ralat sambungan ke server");
+  }
+}
+
+/* ================= RENDER TABLE ================= */
+function renderTable() {
+  const body = document.getElementById("tableBody");
+  const limit = document.getElementById("rowLimit").value;
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+
+  body.innerHTML = "";
+
+  let filtered = tableData.filter(d =>
+    d.tajuk.toLowerCase().includes(keyword)
+  );
+
+  if (limit !== "all") {
+    filtered = filtered.slice(0, parseInt(limit));
+  }
+
+  filtered.forEach((d, i) => {
+    body.innerHTML += `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${d.tajuk}</td>
+        <td>${d.mesy}</td>
+        <td>${d.tahun}</td>
+        <td>${d.bil}</td>
+        <td>
+          <button class="btn secondary action-btn"
+            onclick="toggleFiles(${i})">
+            Buka
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* ================= SORT ================= */
+function sortByYear() {
+  yearAsc = !yearAsc;
+  tableData.sort((a, b) =>
+    yearAsc ? a.tahun - b.tahun : b.tahun - a.tahun
+  );
+  renderTable();
+}
+
+/* ================= SEARCH ================= */
+document
+  .getElementById("searchInput")
+  .addEventListener("input", renderTable);
+
+/* ================= OPEN UPLOAD ================= */
+function openUpload(tajuk) {
+  window.location.href =
+    `gppupload.html?tajuk=${encodeURIComponent(tajuk)}`;
+}
+
+/* ================= EXPAND FILE ================= */
+function toggleFiles(index) {
+  const rowId = "expand-" + index;
+  const existing = document.getElementById(rowId);
+  if (existing) {
+    existing.remove();
+    return;
+  }
+
+  const d = tableData[index];
+
+  const related = rawData.filter(r =>
+    r.tajuk === d.tajuk &&
+    r.mesyuarat === d.mesy &&
+    r.tahun === d.tahun &&
+    r.bil === d.bil
+  );
+
+  let html = `
+    <tr id="${rowId}">
+      <td colspan="6">
+        <div class="file-box">
+  `;
+
+  related.forEach(f => {
+    html += `
+      <div class="tree-file">
+        <span>${f.namaFail}</span>
+        <div>
+          <a class="btn secondary action-btn"
+            href="${f.fileUrl}" target="_blank">Lihat</a>
+          <a class="btn secondary action-btn"
+            href="https://drive.google.com/uc?id=${f.fileId}&export=download">
+            Muat Turun
+          </a>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `
+        <button class="btn action-btn"
+          style="margin-top:10px"
+          onclick="openUpload('${d.tajuk}')">
+          + Tambah Fail
+        </button>
+        </div>
+      </td>
+    </tr>
+  `;
+
+  document
+    .getElementById("gppTable")
+    .rows[index + 1]
+    .insertAdjacentHTML("afterend", html);
+}
+
+/* ================= INIT ================= */
+loadData();
+</script>
+
+</body>
+</html>
