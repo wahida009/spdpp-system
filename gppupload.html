@@ -21,16 +21,6 @@
       width:100%; padding:10px; margin-bottom:14px;
       border-radius:8px; border:1px solid #ccc; font-size:14px;
     }
-    .drop-zone {
-      border:2px dashed #cfe3ff; border-radius:10px;
-      padding:18px; text-align:center; background:#f7fbff;
-      cursor:pointer; margin-bottom:12px;
-    }
-    .file-item {
-      display:flex; justify-content:space-between; align-items:center;
-      background:#eef4ff; padding:8px 12px; border-radius:8px;
-      margin-bottom:6px; font-size:14px;
-    }
     .btn {
       background:#004aad; color:#fff; border:none;
       padding:10px 16px; border-radius:8px;
@@ -57,9 +47,7 @@ if (localStorage.getItem("loggedIn") !== "true") {
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <h2>SPDPP</h2>
-  </div>
+  <div class="sidebar-header"><h2>SPDPP</h2></div>
   <nav class="sidebar-nav">
     <a href="index.html"><i class="fas fa-home"></i> Laman Utama</a>
     <a href="gpp.html" class="active"><i class="fas fa-folder-open"></i> GPP</a>
@@ -79,166 +67,62 @@ if (localStorage.getItem("loggedIn") !== "true") {
 
   <div class="form-card">
 
-    <!-- TAJUK -->
-    <label>Tajuk GPP</label>
-    <input type="text" id="tajuk" placeholder="Masukkan tajuk GPP" required>
+    <!-- 🔴 FORM WAJIB -->
+    <form
+      action="https://script.google.com/macros/s/AKfycbw6ycnPsWPqqlN5jCO58PmnCxoFf45TmCMUhzVkYvjRLHvsjJYkRZDohwSjQFRA3_sy/exec"
+      method="POST"
+      enctype="multipart/form-data"
+      target="hiddenFrame"
+      onsubmit="showLoading()"
+    >
 
-    <!-- MESYUARAT -->
-    <label>Mesyuarat</label>
-    <select id="mesyuarat" required>
-      <option value="">-- Pilih Mesyuarat --</option>
-      <option>JPP PLANM</option>
-      <option>JPP KPKT</option>
-      <option>MJM / NJM</option>
-      <option>MNKT</option>
-    </select>
+      <!-- HIDDEN -->
+      <input type="hidden" name="kategori" value="GPP">
 
-    <!-- TAHUN -->
-    <label>Tahun</label>
-    <select id="tahun" required></select>
+      <label>Tajuk GPP</label>
+      <input type="text" name="tajuk" required>
 
-    <!-- BIL -->
-    <label>Bilangan</label>
-    <input type="number" id="bil" min="1" value="1">
+      <label>Mesyuarat</label>
+      <select name="mesyuarat" required>
+        <option value="">-- Pilih Mesyuarat --</option>
+        <option>JPP PLANM</option>
+        <option>JPP KPKT</option>
+        <option>MJM / NJM</option>
+        <option>MNKT</option>
+      </select>
 
-    <!-- FILE -->
-    <label>Fail (PDF, Word, Excel, PPT)</label>
-    <div class="drop-zone" id="dropZone">
-      Seret fail ke sini atau klik untuk pilih
-    </div>
-    <input type="file" id="fileInput" multiple hidden>
-    <div id="fileList"></div>
+      <label>Tahun</label>
+      <select name="tahun" required>
+        <script>
+          for(let y=2026;y>=2006;y--){
+            document.write(`<option value="${y}">${y}</option>`);
+          }
+        </script>
+      </select>
 
-    <!-- BUTTON -->
-    <div class="actions">
-      <button class="btn" onclick="submitUpload()">Muat Naik</button>
-      <button class="btn secondary" onclick="resetForm()">Batal</button>
-    </div>
+      <label>Bilangan</label>
+      <input type="number" name="bil" value="1">
 
-    <p class="small" id="statusMsg"></p>
+      <label>Fail (PDF, Word, Excel, PPT)</label>
+      <input type="file" name="files" multiple required>
+
+      <div class="actions">
+        <button class="btn" type="submit">Muat Naik</button>
+        <button class="btn secondary" type="reset">Batal</button>
+      </div>
+
+      <p class="small" id="statusMsg"></p>
+    </form>
+
+    <!-- 🔴 FRAME SENYAP -->
+    <iframe name="hiddenFrame" style="display:none"></iframe>
+
   </div>
 </main>
 
 <script>
-/* ================= CONFIG ================= */
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw6ycnPsWPqqlN5jCO58PmnCxoFf45TmCMUhzVkYvjRLHvsjJYkRZDohwSjQFRA3_sy/exec";   // 🔴 WAJIB URL TERKINI
-
-const KATEGORI = "GPP"; // tukar ke PERUNDANGAN / KAJIAN jika duplicate
-
-/* ================= ELEMENTS ================= */
-const tajukInput = document.getElementById("tajuk");
-const mesyuaratSelect = document.getElementById("mesyuarat");
-const tahunSelect = document.getElementById("tahun");
-const bilInput = document.getElementById("bil");
-const dropZone = document.getElementById("dropZone");
-const fileInput = document.getElementById("fileInput");
-const fileList = document.getElementById("fileList");
-const statusMsg = document.getElementById("statusMsg");
-
-/* ================= YEAR OPTIONS ================= */
-for (let y = 2026; y >= 2006; y--) {
-  tahunSelect.innerHTML += `<option value="${y}">${y}</option>`;
-}
-
-/* ================= FILE HANDLING ================= */
-let files = [];
-
-dropZone.onclick = () => fileInput.click();
-fileInput.onchange = e => addFiles(e.target.files);
-
-dropZone.ondragover = e => { e.preventDefault(); };
-dropZone.ondrop = e => {
-  e.preventDefault();
-  addFiles(e.dataTransfer.files);
-};
-
-function addFiles(list) {
-  for (let f of list) files.push(f);
-  renderFiles();
-}
-
-function renderFiles() {
-  fileList.innerHTML = "";
-  files.forEach((f,i) => {
-    fileList.innerHTML += `
-      <div class="file-item">
-        <span>${f.name}</span>
-        <button class="btn secondary" onclick="removeFile(${i})">Buang</button>
-      </div>`;
-  });
-}
-
-function removeFile(i) {
-  files.splice(i,1);
-  renderFiles();
-}
-
-/* ================= SUBMIT ================= */
-async function submitUpload() {
-
-  if (!tajukInput.value || !mesyuaratSelect.value || !tahunSelect.value || files.length === 0) {
-    alert("Sila lengkapkan semua maklumat.");
-    return;
-  }
-
-  statusMsg.innerText = "Memuat naik...";
-
-  const filesData = await Promise.all(
-    files.map(f => new Promise(res => {
-      const r = new FileReader();
-      r.onload = () => res({
-        name: f.name,
-        type: f.type,
-        data: r.result
-      });
-      r.readAsDataURL(f);
-    }))
-  );
-
-  const payload = {
-    kategori: KATEGORI,
-    tajuk: tajukInput.value,
-    mesyuarat: mesyuaratSelect.value,
-    tahun: tahunSelect.value,
-    bil: bilInput.value || 1,
-    files: filesData
-  };
-
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const json = await res.json();
-
-    if (json.success) {
-      alert("✅ " + json.message);
-      resetForm();
-    } else {
-      alert("❌ " + json.message);
-    }
-
-  } catch (err) {
-    alert("❌ Ralat sambungan ke server");
-    console.error(err);
-  }
-
-  statusMsg.innerText = "";
-}
-
-/* ================= RESET ================= */
-function resetForm() {
-  tajukInput.value = "";
-  mesyuaratSelect.value = "";
-  tahunSelect.selectedIndex = 0;
-  bilInput.value = 1;
-  files = [];
-  fileList.innerHTML = "";
-  statusMsg.innerText = "";
+function showLoading(){
+  document.getElementById("statusMsg").innerText = "Memuat naik...";
 }
 
 function logout() {
@@ -249,5 +133,3 @@ function logout() {
 
 </body>
 </html>
-
-
