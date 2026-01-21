@@ -37,7 +37,6 @@
 
 <body>
 
-<!-- AUTH -->
 <script>
 if (localStorage.getItem("loggedIn") !== "true") {
   alert("Sila log masuk terlebih dahulu!");
@@ -45,21 +44,17 @@ if (localStorage.getItem("loggedIn") !== "true") {
 }
 </script>
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header"><h2>SPDPP</h2></div>
   <nav class="sidebar-nav">
-    <a href="index.html"><i class="fas fa-home"></i> Laman Utama</a>
-    <a href="gpp.html" class="active"><i class="fas fa-folder-open"></i> GPP</a>
-    <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
-    <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
+    <a href="index.html">Laman Utama</a>
+    <a href="gpp.html" class="active">GPP</a>
+    <a href="perundangan.html">Perundangan</a>
+    <a href="kajian.html">Kajian Perancangan</a>
   </nav>
-  <button class="logout-btn" onclick="logout()">
-    <i class="fas fa-right-from-bracket"></i> Log Keluar
-  </button>
+  <button class="logout-btn" onclick="logout()">Log Keluar</button>
 </aside>
 
-<!-- MAIN -->
 <main class="main-content">
   <div class="content-header">
     <h1>Muat Naik Fail GPP</h1>
@@ -67,7 +62,6 @@ if (localStorage.getItem("loggedIn") !== "true") {
 
   <div class="form-card">
 
-    <!-- 🔴 FORM WAJIB -->
     <form
       action="https://script.google.com/macros/s/AKfycbw6ycnPsWPqqlN5jCO58PmnCxoFf45TmCMUhzVkYvjRLHvsjJYkRZDohwSjQFRA3_sy/exec"
       method="POST"
@@ -76,7 +70,6 @@ if (localStorage.getItem("loggedIn") !== "true") {
       onsubmit="showLoading()"
     >
 
-      <!-- HIDDEN -->
       <input type="hidden" name="kategori" value="GPP">
 
       <label>Tajuk GPP</label>
@@ -103,8 +96,9 @@ if (localStorage.getItem("loggedIn") !== "true") {
       <label>Bilangan</label>
       <input type="number" name="bil" value="1">
 
-      <label>Fail (PDF, Word, Excel, PPT)</label>
-      <input type="file" name="files" multiple required>
+      <label>Fail</label>
+      <!-- 🔴 PENTING: name="file" -->
+      <input type="file" name="file" multiple required>
 
       <div class="actions">
         <button class="btn" type="submit">Muat Naik</button>
@@ -114,7 +108,6 @@ if (localStorage.getItem("loggedIn") !== "true") {
       <p class="small" id="statusMsg"></p>
     </form>
 
-    <!-- 🔴 FRAME SENYAP -->
     <iframe name="hiddenFrame" style="display:none"></iframe>
 
   </div>
@@ -122,7 +115,8 @@ if (localStorage.getItem("loggedIn") !== "true") {
 
 <script>
 function showLoading(){
-  document.getElementById("statusMsg").innerText = "Memuat naik...";
+  document.getElementById("statusMsg").innerText =
+    "Memuat naik... jika berjaya, mesej akan hilang.";
 }
 
 function logout() {
