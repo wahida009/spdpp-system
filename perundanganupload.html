@@ -16,108 +16,55 @@
       box-shadow:0 4px 14px rgba(0,0,0,.05);
       max-width:720px;
     }
-
-    label {
-      font-weight:600;
-      color:#004aad;
-      display:block;
-      margin-bottom:6px;
-    }
-
+    label { font-weight:600; color:#004aad; display:block; margin-bottom:6px; }
     input, select {
-      width:100%;
-      padding:10px;
-      margin-bottom:14px;
-      border-radius:8px;
-      border:1px solid #ccc;
-      font-size:14px;
+      width:100%; padding:10px; margin-bottom:14px;
+      border-radius:8px; border:1px solid #ccc; font-size:14px;
     }
-
-    .drop-zone {
-      border:2px dashed #cfe3ff;
-      border-radius:10px;
-      padding:18px;
-      text-align:center;
-      background:#f7fbff;
-      cursor:pointer;
-      margin-bottom:12px;
-    }
-
-    .file-item {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background:#eef4ff;
-      padding:8px 12px;
-      border-radius:8px;
-      margin-bottom:6px;
-      font-size:14px;
-    }
-
     .btn {
-      background:#004aad;
-      color:#fff;
-      border:none;
-      padding:10px 16px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
+      background:#004aad; color:#fff; border:none;
+      padding:10px 16px; border-radius:8px;
+      cursor:pointer; font-weight:600;
     }
-
     .btn.secondary {
-      background:#eef3ff;
-      color:#004aad;
+      background:#eef3ff; color:#004aad;
       border:1px solid #cfe3ff;
     }
-
-    .actions {
-      display:flex;
-      gap:12px;
-      margin-top:14px;
-    }
-
-    .small {
-      font-size:13px;
-      color:#666;
-    }
+    .actions { display:flex; gap:12px; margin-top:14px; }
+    .small { font-size:13px; color:#666; }
   </style>
 </head>
 
 <body>
 
-<!-- 🟦 SIDEBAR -->
+<script>
+if (localStorage.getItem("loggedIn") !== "true") {
+  alert("Sila log masuk terlebih dahulu!");
+  window.location.href = "login.html";
+}
+</script>
+
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <h2>SPDPP</h2>
-    <button class="toggle-btn"><i class="fas fa-bars"></i></button>
-  </div>
-
+  <div class="sidebar-header"><h2>SPDPP</h2></div>
   <nav class="sidebar-nav">
-    <a href="index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
-    <a href="gpp.html"><i class="fas fa-folder-open"></i><span>GPP</span></a>
-    <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
-    <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
+    <a href="index.html">Laman Utama</a>
+    <a href="gpp.html">GPP</a>
+    <a href="perundangan.html" class="active">Perundangan</a>
+    <a href="kajian.html">Kajian Perancangan</a>
   </nav>
-
-  <button class="logout-btn" onclick="logout()">
-    <i class="fas fa-right-from-bracket"></i><span>Log Keluar</span>
-  </button>
+  <button class="logout-btn" onclick="logout()">Log Keluar</button>
 </aside>
 
-<!-- 🟩 MAIN -->
 <main class="main-content">
-
   <div class="content-header">
     <h1>Muat Naik Fail Perundangan</h1>
   </div>
 
   <div class="form-card">
 
-    <p class="small">
-      <b>Tajuk Perundangan:</b> <span id="tajukLabel"></span>
-    </p>
+    <label>Tajuk Perundangan</label>
+    <input type="text" id="tajuk">
 
-    <!-- MESYUARAT -->
     <label>Mesyuarat</label>
     <select id="mesyuarat">
       <option value="">-- Pilih Mesyuarat --</option>
@@ -127,24 +74,15 @@
       <option>MNKT</option>
     </select>
 
-    <!-- TAHUN -->
     <label>Tahun</label>
     <select id="tahun"></select>
 
-    <!-- BIL -->
     <label>Bilangan</label>
-    <input type="number" id="bil" min="1" value="1">
+    <input type="number" id="bil" value="1">
 
-    <!-- FILE -->
-    <label>Fail (PDF, Word, Excel, PPT)</label>
-    <div class="drop-zone" id="dropZone">
-      Seret fail ke sini atau klik untuk pilih
-    </div>
-    <input type="file" id="fileInput" multiple hidden>
+    <label>Fail</label>
+    <input type="file" id="fileInput" multiple>
 
-    <div id="fileList"></div>
-
-    <!-- BUTTON -->
     <div class="actions">
       <button class="btn" onclick="submitUpload()">Muat Naik</button>
       <button class="btn secondary" onclick="resetForm()">Batal</button>
@@ -156,75 +94,23 @@
 </main>
 
 <script>
-/* ===== AUTH ===== */
-if (localStorage.getItem("loggedIn") !== "true") {
-  alert("Sila log masuk terlebih dahulu!");
-  window.location.href = "login.html";
-}
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxevWe2v0O_OF5seb-wFSBnwP6wDRyUJ1fgHpO2sx0xu5jdLuGuL4veLOg5eBd61mwh/exec";
+const KATEGORI = "PERUNDANGAN";
 
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
-}
-
-/* ================= CONFIG ================= */
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzWA_vgNqdfhFSCMseFiQrYPy_iFUy20fqK4cj46VACFx2eAtVsmGFfvozsGJBuFcFJ/exec";   // 🔴 WAJIB URL TERKINI
-
-const KATEGORI = "PERUNDANGAN"; // tukar ke PERUNDANGAN / KAJIAN jika duplicate
-
-/* ================= ELEMENTS ================= */
 const tajukInput = document.getElementById("tajuk");
 const mesyuaratSelect = document.getElementById("mesyuarat");
 const tahunSelect = document.getElementById("tahun");
 const bilInput = document.getElementById("bil");
-const dropZone = document.getElementById("dropZone");
 const fileInput = document.getElementById("fileInput");
-const fileList = document.getElementById("fileList");
 const statusMsg = document.getElementById("statusMsg");
-  
-/* ===== YEAR OPTIONS (2026 → 2006) ===== */
+
 for (let y = 2026; y >= 2006; y--) {
   tahunSelect.innerHTML += `<option value="${y}">${y}</option>`;
 }
 
-/* ================= FILE HANDLING ================= */
-let files = [];
-
-dropZone.onclick = () => fileInput.click();
-fileInput.onchange = e => addFiles(e.target.files);
-
-dropZone.ondragover = e => { e.preventDefault(); };
-dropZone.ondrop = e => {
-  e.preventDefault();
-  addFiles(e.dataTransfer.files);
-};
-
-function addFiles(list) {
-  for (let f of list) files.push(f);
-  renderFiles();
-}
-
-function renderFiles() {
-  fileList.innerHTML = "";
-  files.forEach((f,i) => {
-    fileList.innerHTML += `
-      <div class="file-item">
-        <span>${f.name}</span>
-        <button class="btn secondary" onclick="removeFile(${i})">Buang</button>
-      </div>`;
-  });
-}
-
-function removeFile(i) {
-  files.splice(i,1);
-  renderFiles();
-}
-  
-/* ================= SUBMIT ================= */
 async function submitUpload() {
 
-  if (!tajukInput.value || !mesyuaratSelect.value || !tahunSelect.value || files.length === 0) {
+  if (!tajukInput.value || !mesyuaratSelect.value || !tahunSelect.value || fileInput.files.length === 0) {
     alert("Sila lengkapkan semua maklumat.");
     return;
   }
@@ -232,13 +118,9 @@ async function submitUpload() {
   statusMsg.innerText = "Memuat naik...";
 
   const filesData = await Promise.all(
-    files.map(f => new Promise(res => {
+    [...fileInput.files].map(f => new Promise(res => {
       const r = new FileReader();
-      r.onload = () => res({
-        name: f.name,
-        type: f.type,
-        data: r.result
-      });
+      r.onload = () => res({ name:f.name, type:f.type, data:r.result });
       r.readAsDataURL(f);
     }))
   );
@@ -255,46 +137,36 @@ async function submitUpload() {
   try {
     const res = await fetch(SCRIPT_URL, {
       method: "POST",
-      mode: "cors",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
     });
 
     const json = await res.json();
+    alert(json.success ? "✅ "+json.message : "❌ "+json.message);
 
-    if (json.success) {
-      alert("✅ " + json.message);
-      resetForm();
-    } else {
-      alert("❌ " + json.message);
-    }
+    if (json.success) window.location.href = "perundangan.html";
 
   } catch (err) {
-    alert("❌ Ralat sambungan ke server");
-    console.error(err);
+    alert("❌ Gagal sambung ke server");
   }
 
   statusMsg.innerText = "";
 }
-/* ================= RESET ================= */
+
 function resetForm() {
   tajukInput.value = "";
   mesyuaratSelect.value = "";
   tahunSelect.selectedIndex = 0;
   bilInput.value = 1;
-  files = [];
-  fileList.innerHTML = "";
+  fileInput.value = "";
   statusMsg.innerText = "";
 }
 
-
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
