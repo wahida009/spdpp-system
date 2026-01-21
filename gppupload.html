@@ -16,27 +16,49 @@
       box-shadow:0 4px 14px rgba(0,0,0,.05);
       max-width:720px;
     }
-    label { font-weight:600; color:#004aad; display:block; margin-bottom:6px; }
+    label {
+      font-weight:600;
+      color:#004aad;
+      display:block;
+      margin-bottom:6px;
+    }
     input, select {
-      width:100%; padding:10px; margin-bottom:14px;
-      border-radius:8px; border:1px solid #ccc; font-size:14px;
+      width:100%;
+      padding:10px;
+      margin-bottom:14px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
     }
     .btn {
-      background:#004aad; color:#fff; border:none;
-      padding:10px 16px; border-radius:8px;
-      cursor:pointer; font-weight:600;
+      background:#004aad;
+      color:#fff;
+      border:none;
+      padding:10px 16px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
     }
     .btn.secondary {
-      background:#eef3ff; color:#004aad;
+      background:#eef3ff;
+      color:#004aad;
       border:1px solid #cfe3ff;
     }
-    .actions { display:flex; gap:12px; margin-top:14px; }
-    .small { font-size:13px; color:#666; }
+    .actions {
+      display:flex;
+      gap:12px;
+      margin-top:14px;
+    }
+    .small {
+      font-size:13px;
+      color:#666;
+    }
   </style>
 </head>
 
 <body>
 
+<!-- AUTH -->
 <script>
 if (localStorage.getItem("loggedIn") !== "true") {
   alert("Sila log masuk terlebih dahulu!");
@@ -44,6 +66,7 @@ if (localStorage.getItem("loggedIn") !== "true") {
 }
 </script>
 
+<!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-header"><h2>SPDPP</h2></div>
   <nav class="sidebar-nav">
@@ -55,6 +78,7 @@ if (localStorage.getItem("loggedIn") !== "true") {
   <button class="logout-btn" onclick="logout()">Log Keluar</button>
 </aside>
 
+<!-- MAIN -->
 <main class="main-content">
   <div class="content-header">
     <h1>Muat Naik Fail GPP</h1>
@@ -62,61 +86,128 @@ if (localStorage.getItem("loggedIn") !== "true") {
 
   <div class="form-card">
 
-    <form
-      action="https://script.google.com/macros/s/AKfycbzWA_vgNqdfhFSCMseFiQrYPy_iFUy20fqK4cj46VACFx2eAtVsmGFfvozsGJBuFcFJ/exec"
-      method="POST"
-      enctype="multipart/form-data"
-      target="hiddenFrame"
-      onsubmit="showLoading()"
-    >
+    <!-- TAJUK -->
+    <label>Tajuk GPP</label>
+    <input type="text" id="tajuk" placeholder="Masukkan tajuk GPP">
 
-      <input type="hidden" name="kategori" value="GPP">
+    <!-- MESYUARAT -->
+    <label>Mesyuarat</label>
+    <select id="mesyuarat">
+      <option value="">-- Pilih Mesyuarat --</option>
+      <option>JPP PLANM</option>
+      <option>JPP KPKT</option>
+      <option>MJM / NJM</option>
+      <option>MNKT</option>
+    </select>
 
-      <label>Tajuk GPP</label>
-      <input type="text" name="tajuk" required>
+    <!-- TAHUN -->
+    <label>Tahun</label>
+    <select id="tahun"></select>
 
-      <label>Mesyuarat</label>
-      <select name="mesyuarat" required>
-        <option value="">-- Pilih Mesyuarat --</option>
-        <option>JPP PLANM</option>
-        <option>JPP KPKT</option>
-        <option>MJM / NJM</option>
-        <option>MNKT</option>
-      </select>
+    <!-- BIL -->
+    <label>Bilangan</label>
+    <input type="number" id="bil" value="1" min="1">
 
-      <label>Tahun</label>
-      <select name="tahun" required>
-        <script>
-          for(let y=2026;y>=2006;y--){
-            document.write(`<option value="${y}">${y}</option>`);
-          }
-        </script>
-      </select>
+    <!-- FAIL -->
+    <label>Fail</label>
+    <input type="file" id="fileInput" multiple>
 
-      <label>Bilangan</label>
-      <input type="number" name="bil" value="1">
+    <div class="actions">
+      <button class="btn" onclick="submitUpload()">Muat Naik</button>
+      <button class="btn secondary" onclick="resetForm()">Batal</button>
+    </div>
 
-      <label>Fail</label>
-      <!-- 🔴 PENTING: name="file" -->
-      <input type="file" name="file" multiple required>
-
-      <div class="actions">
-        <button class="btn" type="submit">Muat Naik</button>
-        <button class="btn secondary" type="reset">Batal</button>
-      </div>
-
-      <p class="small" id="statusMsg"></p>
-    </form>
-
-    <iframe name="hiddenFrame" style="display:none"></iframe>
+    <p class="small" id="statusMsg"></p>
 
   </div>
 </main>
 
 <script>
-function showLoading(){
-  document.getElementById("statusMsg").innerText =
-    "Memuat naik... jika berjaya, mesej akan hilang.";
+/* ================= CONFIG ================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxevWe2v0O_OF5seb-wFSBnwP6wDRyUJ1fgHpO2sx0xu5jdLuGuL4veLOg5eBd61mwh/exec";
+const KATEGORI = "GPP";
+
+/* ================= ELEMENT ================= */
+const tajukInput = document.getElementById("tajuk");
+const mesyuaratSelect = document.getElementById("mesyuarat");
+const tahunSelect = document.getElementById("tahun");
+const bilInput = document.getElementById("bil");
+const fileInput = document.getElementById("fileInput");
+const statusMsg = document.getElementById("statusMsg");
+
+/* ================= YEAR OPTIONS ================= */
+for (let y = 2026; y >= 2006; y--) {
+  tahunSelect.innerHTML += `<option value="${y}">${y}</option>`;
+}
+
+/* ================= SUBMIT ================= */
+async function submitUpload() {
+
+  if (
+    !tajukInput.value.trim() ||
+    !mesyuaratSelect.value ||
+    !tahunSelect.value ||
+    fileInput.files.length === 0
+  ) {
+    alert("Sila lengkapkan semua maklumat.");
+    return;
+  }
+
+  statusMsg.innerText = "Memuat naik... sila tunggu (10–30 saat)";
+
+  const filesData = await Promise.all(
+    [...fileInput.files].map(f => new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({
+        name: f.name,
+        type: f.type,
+        data: reader.result
+      });
+      reader.readAsDataURL(f);
+    }))
+  );
+
+  const payload = {
+    kategori: KATEGORI,
+    tajuk: tajukInput.value.trim(),
+    mesyuarat: mesyuaratSelect.value,
+    tahun: tahunSelect.value,
+    bil: bilInput.value || 1,
+    files: filesData
+  };
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const json = await res.json();
+
+    if (json.success) {
+      alert("✅ " + json.message);
+      window.location.href = "gpp.html";
+    } else {
+      alert("❌ " + json.message);
+    }
+
+  } catch (err) {
+    alert("❌ Gagal sambung ke server");
+    console.error(err);
+  }
+
+  statusMsg.innerText = "";
+}
+
+/* ================= RESET ================= */
+function resetForm() {
+  tajukInput.value = "";
+  mesyuaratSelect.value = "";
+  tahunSelect.selectedIndex = 0;
+  bilInput.value = 1;
+  fileInput.value = "";
+  statusMsg.innerText = "";
 }
 
 function logout() {
@@ -127,5 +218,3 @@ function logout() {
 
 </body>
 </html>
-
-
