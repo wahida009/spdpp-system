@@ -5,29 +5,27 @@
 <title>Muat Naik Fail GPP | SPDPP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<script src="https://kit.fontawesome.com/a2e0e6d60a.js" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="style.css">
 
-<!-- 🔥 Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAnyjKPVzeKu5w9X42ONnk8z9XsU6LPp4A",              // 🔴 GUNA CONFIG AWAK
+  apiKey: "AIzaSyAnyjKPVzeKu5w9X42ONnk8z9XsU6LPp4A",
   authDomain: "spdpp-310bc.firebaseapp.com",
   projectId: "spdpp-310bc",
   storageBucket: "spdpp-310bc.appspot.com",
   messagingSenderId: "973564844896",
-  appId: "1:973564844896:web:xxxx"
+  appId: "1:973564844896:web:555597f8fdca461ca35c05"
 };
 
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 const db = getFirestore(app);
 
-window.submitUpload = async function () {
+window.submitUpload = async () => {
 
   const tajuk = document.getElementById("tajuk").value.trim();
   const mesy = document.getElementById("mesyuarat").value;
@@ -45,12 +43,11 @@ window.submitUpload = async function () {
 
   try {
     for (let f of files) {
-
       const path = `GPP/${tahun}/${mesy}/Bil_${bil}/${Date.now()}_${f.name}`;
-      const storageRef = ref(storage, path);
+      const fileRef = ref(storage, path);
 
-      await uploadBytes(storageRef, f);
-      const url = await getDownloadURL(storageRef);
+      await uploadBytes(fileRef, f);
+      const url = await getDownloadURL(fileRef);
 
       await addDoc(collection(db, "records"), {
         kategori: "GPP",
@@ -67,23 +64,13 @@ window.submitUpload = async function () {
     status.innerText = "✅ Fail berjaya dimuat naik";
     document.getElementById("uploadForm").reset();
 
-  } catch (err) {
-    console.error(err);
+  } catch (e) {
+    console.error(e);
     alert("❌ Gagal muat naik");
     status.innerText = "";
   }
 };
 </script>
-
-<style>
-.form-card {
-  background:#fff; padding:22px; border-radius:12px;
-  max-width:600px;
-}
-label { font-weight:600; color:#004aad; display:block; margin-top:10px; }
-input, select { width:100%; padding:10px; margin-top:6px; }
-button { margin-top:15px; }
-</style>
 </head>
 
 <body>
@@ -91,7 +78,6 @@ button { margin-top:15px; }
 <main class="main-content">
 <h1>Muat Naik Fail GPP</h1>
 
-<div class="form-card">
 <form id="uploadForm" onsubmit="event.preventDefault(); submitUpload();">
 
 <label>Tajuk GPP</label>
@@ -119,13 +105,11 @@ for(let y=2026;y>=2006;y--) document.write(`<option>${y}</option>`);
 <label>Fail</label>
 <input type="file" id="files" multiple required>
 
-<button class="btn">Muat Naik</button>
-<p id="status" class="small"></p>
+<button type="submit">Muat Naik</button>
+<p id="status"></p>
 
 </form>
-</div>
 </main>
 
 </body>
 </html>
-
