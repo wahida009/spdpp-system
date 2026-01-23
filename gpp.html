@@ -7,10 +7,10 @@
 
   <!-- Font & Icon -->
   <script src="https://kit.fontawesome.com/a2e0e6d60a.js" crossorigin="anonymous"></script>
-  
-  <!-- Theme sedia ada -->
+
+  <!-- Theme -->
   <link rel="stylesheet" href="style.css">
-  
+
   <style>
     .top-bar {
       display:flex;
@@ -20,19 +20,13 @@
       gap:12px;
       flex-wrap:wrap;
     }
-
     .top-bar input {
       padding:8px 12px;
       border-radius:8px;
       border:1px solid #ccc;
       min-width:220px;
     }
-
-    .top-actions {
-      display:flex;
-      gap:10px;
-    }
-
+    .top-actions { display:flex; gap:10px; }
     .btn {
       background:#004aad;
       color:#fff;
@@ -42,13 +36,11 @@
       cursor:pointer;
       font-weight:600;
     }
-
     .btn.secondary {
       background:#eef3ff;
       color:#004aad;
       border:1px solid #cfe3ff;
     }
-
     table {
       width:100%;
       border-collapse:collapse;
@@ -56,254 +48,153 @@
       border-radius:10px;
       overflow:hidden;
     }
-
     th {
       background:#004aad;
       color:#fff;
       padding:12px;
-      text-align:left;
       cursor:pointer;
-      white-space:nowrap;
     }
-
     td {
       padding:12px;
       border-bottom:1px solid #eef3ff;
-      white-space:nowrap;
     }
-
-    tr:hover td {
-      background:#f7fbff;
-    }
-
-    .action-btn {
-      padding:6px 10px;
-      font-size:13px;
-      border-radius:6px;
-    }
-
-    .footer-bar {
-      margin-top:14px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    select {
-      padding:6px 10px;
-      border-radius:6px;
-    }
+    tr:hover td { background:#f7fbff; }
+    .action-btn { padding:6px 10px; font-size:13px; }
   </style>
+
+  <!-- 🔥 FIREBASE SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAnyjKPVzeKu5w9X42ONnk8z9XsU6LPp4A",
+      authDomain: "spdpp-310bc.firebaseapp.com",
+      projectId: "spdpp-310bc",
+      storageBucket: "spdpp-310bc.appspot.com",
+      messagingSenderId: "973564844896",
+      appId: "1:973564844896:web:555597f8fdca461ca35c05"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+  </script>
 </head>
 
 <body>
 
+<!-- AUTH -->
+<script>
+if (localStorage.getItem("loggedIn") !== "true") {
+  alert("Sila log masuk terlebih dahulu!");
+  window.location.href = "login.html";
+}
+function logout() {
+  localStorage.removeItem("loggedIn");
+  window.location.href = "login.html";
+}
+</script>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <h2>SPDPP</h2>
-    <button class="toggle-btn"><i class="fas fa-bars"></i></button>
-  </div>
-
+  <div class="sidebar-header"><h2>SPDPP</h2></div>
   <nav class="sidebar-nav">
-    <a href="index.html"><i class="fas fa-home"></i><span>Laman Utama</span></a>
-    <a href="gpp.html" class="active"><i class="fas fa-folder-open"></i><span>GPP</span></a>
-    <a href="perundangan.html"><i class="fas fa-scale-balanced"></i> Perundangan</a>
-    <a href="kajian.html"><i class="fas fa-chart-column"></i> Kajian Perancangan</a>
+    <a href="index.html">Laman Utama</a>
+    <a href="gpp.html" class="active">GPP</a>
+    <a href="perundangan.html">Perundangan</a>
+    <a href="kajian.html">Kajian Perancangan</a>
   </nav>
-
-  <button class="logout-btn" onclick="logout()">
-    <i class="fas fa-right-from-bracket"></i><span>Log Keluar</span>
-  </button>
+  <button class="logout-btn" onclick="logout()">Log Keluar</button>
 </aside>
 
 <!-- MAIN -->
 <main class="main-content">
+  <h1>Garis Panduan Perancangan (GPP)</h1>
 
-  <div class="content-header">
-    <h1>Garis Panduan Perancangan (GPP)</h1>
-  </div>
-
-  <!-- TOP BAR -->
   <div class="top-bar">
     <input type="text" id="searchInput" placeholder="Cari Tajuk GPP...">
-
     <div class="top-actions">
-      <button class="btn secondary" onclick="alert('Padam dipilih')">
-        <i class="fas fa-trash"></i> Padam
-      </button>
-      <button class="btn" onclick="openUpload('')">
+      <button class="btn" onclick="location.href='gppupload.html'">
         <i class="fas fa-plus"></i> Tambah Fail
       </button>
     </div>
   </div>
 
-  <!-- TABLE -->
   <table id="gppTable">
     <thead>
       <tr>
         <th>#</th>
-        <th>Tajuk GPP</th>
+        <th>Tajuk</th>
         <th>Mesyuarat</th>
-        <th onclick="sortByYear()">Tahun ⬍</th>
+        <th>Tahun</th>
         <th>Bil</th>
         <th>Tindakan</th>
       </tr>
     </thead>
     <tbody id="tableBody"></tbody>
   </table>
-
-  <!-- FOOTER BAR -->
-  <div class="footer-bar">
-    <div>
-      Papar 
-      <select id="rowLimit" onchange="renderTable()">
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="30">30</option>
-        <option value="all">Semua</option>
-      </select>
-      rekod
-    </div>
-
-    <div class="small">SPDPP | PLANMalaysia</div>
-  </div>
-
 </main>
 
-<script>
-/* ================= AUTH ================= */
-if (localStorage.getItem("loggedIn") !== "true") {
-  alert("Sila log masuk terlebih dahulu!");
-  window.location.href = "login.html";
-}
-
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
-}
-
-/* ================= CONFIG ================= */
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxhu9zMDgM2dv93aSNYwgKdydLIb8NSGHJ_nRGXGH7xvPAc44HUMM7-XCYY0UXcwWNs/exec";
-
-const KATEGORI = "GPP";   // 🔑 WAJIB SAMA DENGAN GOOGLE SHEETS (Column B)
+<!-- 🔥 MAIN SCRIPT -->
+<script type="module">
+import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 let rawData = [];
 let tableData = [];
-let yearAsc = true;
 
-/* ================= LOAD DATA ================= */
 async function loadData() {
-  try {
-    const res = await fetch(
-      `${SCRIPT_URL}?action=list&kategori=GPP`,
-      { mode: "cors" }
-    );
-
-    if (!res.ok) {
-      throw new Error("HTTP " + res.status);
-    }
-
-    const json = await res.json();
-
-    if (!json.success) {
-      alert("Gagal ambil data dari server");
-      console.error(json);
-      return;
-    }
-
-    rawData = json.data;
-
-    const map = {};
-    rawData.forEach(r => {
-      const key = `${r.tajuk}|${r.mesyuarat}|${r.tahun}|${r.bil}`;
-      if (!map[key]) {
-        map[key] = {
-          tajuk: r.tajuk,
-          mesy: r.mesyuarat,
-          tahun: r.tahun,
-          bil: r.bil
-        };
-      }
-    });
-
-    tableData = Object.values(map);
-    renderTable();
-
-  } catch (err) {
-    alert("Ralat sambungan ke server");
-    console.error(err);
-  }
-}
-/* ================= RENDER TABLE ================= */
-function renderTable() {
-  const body = document.getElementById("tableBody");
-  const limit = document.getElementById("rowLimit").value;
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-
-  body.innerHTML = "";
-
-  let filtered = tableData.filter(d =>
-    d.tajuk.toLowerCase().includes(keyword)
+  const q = query(
+    collection(window.db, "records"),
+    where("kategori", "==", "GPP")
   );
 
-  if (limit !== "all") {
-    filtered = filtered.slice(0, parseInt(limit));
-  }
+  const snap = await getDocs(q);
+  rawData = snap.docs.map(d => d.data());
 
-  filtered.forEach((d, i) => {
-    body.innerHTML += `
-      <tr>
-        <td>${i + 1}</td>
-        <td>${d.tajuk}</td>
-        <td>${d.mesy}</td>
-        <td>${d.tahun}</td>
-        <td>${d.bil}</td>
-        <td>
-          <button class="btn secondary action-btn"
-            onclick="toggleFiles(${i})">
-            Buka
-          </button>
-        </td>
-      </tr>
-    `;
+  const map = {};
+  rawData.forEach(r => {
+    const key = `${r.tajuk}|${r.mesyuarat}|${r.tahun}|${r.bil}`;
+    if (!map[key]) {
+      map[key] = {
+        tajuk: r.tajuk,
+        mesy: r.mesyuarat,
+        tahun: r.tahun,
+        bil: r.bil
+      };
+    }
   });
-}
 
-/* ================= SORT ================= */
-function sortByYear() {
-  yearAsc = !yearAsc;
-  tableData.sort((a, b) =>
-    yearAsc ? a.tahun - b.tahun : b.tahun - a.tahun
-  );
+  tableData = Object.values(map);
   renderTable();
 }
 
-/* ================= SEARCH ================= */
-document
-  .getElementById("searchInput")
-  .addEventListener("input", renderTable);
+function renderTable() {
+  const body = document.getElementById("tableBody");
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  body.innerHTML = "";
 
-/* ================= OPEN UPLOAD ================= */
-function openUpload(tajuk) {
-  window.location.href =
-    `gppupload.html?tajuk=${encodeURIComponent(tajuk)}`;
+  tableData
+    .filter(d => d.tajuk.toLowerCase().includes(keyword))
+    .forEach((d, i) => {
+      body.innerHTML += `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${d.tajuk}</td>
+          <td>${d.mesy}</td>
+          <td>${d.tahun}</td>
+          <td>${d.bil}</td>
+          <td>
+            <button class="btn secondary action-btn"
+              onclick="toggleFiles(${i})">Buka</button>
+          </td>
+        </tr>
+      `;
+    });
 }
 
-/* ================= EXPAND FILE ================= */
-function toggleFiles(index) {
-  const rowId = "expand-" + index;
-  const existing = document.getElementById(rowId);
-  if (existing) {
-    existing.remove();
-    return;
-  }
-
+window.toggleFiles = function(index) {
   const d = tableData[index];
-
   const related = rawData.filter(r =>
     r.tajuk === d.tajuk &&
     r.mesyuarat === d.mesy &&
@@ -311,61 +202,29 @@ function toggleFiles(index) {
     r.bil === d.bil
   );
 
-  let html = `
-    <tr id="${rowId}">
-      <td colspan="6">
-        <div class="file-box">
-  `;
-
+  let html = `<tr><td colspan="6"><div class="file-box">`;
   related.forEach(f => {
     html += `
       <div class="tree-file">
-        <span>${f.namaFail}</span>
-        <div>
-          <a class="btn secondary action-btn"
-            href="${f.fileUrl}" target="_blank">Lihat</a>
-          <a class="btn secondary action-btn"
-            href="https://drive.google.com/uc?id=${f.fileId}&export=download">
-            Muat Turun
-          </a>
-        </div>
-      </div>
-    `;
+        ${f.namaFail}
+        <a class="btn secondary action-btn" href="${f.fileUrl}" target="_blank">
+          Lihat
+        </a>
+      </div>`;
   });
-
-  html += `
-        <button class="btn action-btn"
-          style="margin-top:10px"
-          onclick="openUpload('${d.tajuk}')">
-          + Tambah Fail
-        </button>
-        </div>
-      </td>
-    </tr>
-  `;
+  html += `</div></td></tr>`;
 
   document
     .getElementById("gppTable")
     .rows[index + 1]
     .insertAdjacentHTML("afterend", html);
-}
+};
 
-/* ================= INIT ================= */
+document.getElementById("searchInput")
+  .addEventListener("input", renderTable);
+
 loadData();
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
